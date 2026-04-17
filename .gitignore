@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# .NET
+bin/
+obj/
+
+# Local runtime state
+rgb_effect_pids.txt
+rgb_intensity.txt
+
+# Publish / build artifacts
+dist/
+*.exe
+*.dll
+
+# OS / editor
+.vs/
+.vscode/
+Thumbs.db
+Desktop.ini
