@@ -2,13 +2,13 @@
 
 ## Version courte
 
-**ASUS RGB Studio** est un utilitaire Windows non officiel qui permet de reprendre le controle du retroeclairage RGB de certains laptops ASUS, avec des effets plus jolis, plus reactifs et plus flexibles que ceux proposes par Armoury Crate / Aura.
+**ASUS Keyboard FX + Ambilight** est un utilitaire Windows non officiel qui permet de reprendre le controle des effets clavier RGB et de l’eclairage type Ambilight sur certains laptops ASUS, avec des rendus plus jolis, plus reactifs et plus flexibles que ceux proposes par Armoury Crate / Aura.
 
 Le logiciel propose une interface legere, des apercus live, un controle d'intensite global et plusieurs effets personnalises, du style `K2000`, `Cyberpunk`, `Mirror`, `Ambilight`, `Audio Pulse` ou encore des rendus plus cinema et atmospheriques.
 
 ## Version GitHub / post reseau
 
-J’ai developpe **ASUS RGB Studio**, un petit outil Windows pour piloter le RGB d’un laptop ASUS avec des effets custom, une interface plus propre et une approche plus flexible que le logiciel officiel.
+J’ai developpe **ASUS Keyboard FX + Ambilight**, un petit outil Windows pour piloter le clavier RGB et les effets de bandeau d’un laptop ASUS avec des effets custom, une interface plus propre et une approche plus flexible que le logiciel officiel.
 
 Le projet inclut :
 
@@ -40,4 +40,4 @@ L’idee est plutot :
 
 ## Petit texte encore plus court
 
-**ASUS RGB Studio** est un utilitaire RGB custom pour laptops ASUS, avec des effets plus jolis, une interface plus propre et un meilleur controle que la solution officielle pour les utilisateurs qui veulent quelque chose de plus vivant et plus perso.
+**ASUS Keyboard FX + Ambilight** est un utilitaire RGB custom pour laptops ASUS, avec de vrais effets clavier, un support Ambilight et une interface plus propre pour les utilisateurs qui veulent quelque chose de plus vivant et plus perso.

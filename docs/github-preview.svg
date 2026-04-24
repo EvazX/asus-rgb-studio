@@ -1,0 +1,97 @@
+<svg width="1200" height="700" viewBox="0 0 1200 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="700" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#07111B"/>
+      <stop offset="1" stop-color="#0E1726"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="420" y2="700" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#121C2C"/>
+      <stop offset="1" stop-color="#0F1724"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="360" y2="120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#162234"/>
+      <stop offset="1" stop-color="#0F1724"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="700" rx="24" fill="url(#bg)"/>
+  <rect x="760" y="24" width="416" height="652" rx="28" fill="url(#panel)" stroke="#243347"/>
+  <text x="792" y="74" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">ASUS Keyboard FX</text>
+  <text x="792" y="102" fill="#93A4B8" font-family="Segoe UI, Arial, sans-serif" font-size="16">Keyboard effects + Ambilight for ASUS laptops</text>
+  <circle cx="1110" cy="80" r="26" stroke="#334155" stroke-width="12"/>
+  <path d="M1110 54 A26 26 0 0 1 1132 92" stroke="#38BDF8" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="1132" cy="92" r="6" fill="#38BDF8"/>
+  <rect x="792" y="128" width="352" height="70" rx="18" fill="#111B2A" stroke="#243347"/>
+  <text x="816" y="154" fill="#BFD4FE" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="600">Global intensity</text>
+  <rect x="816" y="168" width="260" height="8" rx="4" fill="#273548"/>
+  <rect x="816" y="168" width="200" height="8" rx="4" fill="#22D3EE"/>
+  <text x="1088" y="176" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">78%</text>
+  <g transform="translate(792 222)">
+    <rect width="352" height="120" rx="20" fill="url(#card)" stroke="#3B82F6" stroke-width="2"/>
+    <text x="18" y="30" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700">Ambilight Reactif</text>
+    <text x="18" y="52" fill="#7DD3FC" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700">Temps Reel</text>
+    <text x="18" y="76" fill="#94A3B8" font-family="Segoe UI, Arial, sans-serif" font-size="13">Suit l'ecran avec une reponse rapide.</text>
+    <rect x="18" y="86" width="96" height="22" rx="11" fill="#1D4ED8"/>
+    <text x="40" y="101" fill="#FFFFFF" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700">Active</text>
+    <g transform="translate(224 16)">
+      <rect width="108" height="88" rx="16" fill="#0B1220" stroke="#334155"/>
+      <rect x="10" y="10" width="88" height="34" rx="10" fill="#1E293B"/>
+      <rect x="13" y="13" width="19" height="28" rx="6" fill="#38BDF8"/>
+      <rect x="35" y="13" width="19" height="28" rx="6" fill="#1D4ED8"/>
+      <rect x="57" y="13" width="19" height="28" rx="6" fill="#7C3AED"/>
+      <rect x="79" y="13" width="16" height="28" rx="6" fill="#F472B6"/>
+      <rect x="16" y="60" width="76" height="10" rx="5" fill="#1E293B"/>
+      <rect x="19" y="62" width="15" height="6" rx="3" fill="#38BDF8"/>
+      <rect x="36" y="62" width="15" height="6" rx="3" fill="#1D4ED8"/>
+      <rect x="53" y="62" width="15" height="6" rx="3" fill="#7C3AED"/>
+      <rect x="70" y="62" width="19" height="6" rx="3" fill="#F472B6"/>
+    </g>
+  </g>
+  <g transform="translate(792 356)">
+    <rect width="352" height="120" rx="20" fill="url(#card)" stroke="#243347"/>
+    <text x="18" y="30" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700">Mirror</text>
+    <text x="18" y="52" fill="#7DD3FC" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700">Temps Reel</text>
+    <text x="18" y="76" fill="#94A3B8" font-family="Segoe UI, Arial, sans-serif" font-size="13">Reflet stylise de l'image sur clavier et bandeau.</text>
+    <g transform="translate(224 16)">
+      <rect width="108" height="88" rx="16" fill="#0B1220" stroke="#334155"/>
+      <rect x="10" y="10" width="88" height="34" rx="10" fill="#1E293B"/>
+      <rect x="13" y="13" width="19" height="28" rx="6" fill="#2563EB"/>
+      <rect x="35" y="13" width="19" height="28" rx="6" fill="#06B6D4"/>
+      <rect x="57" y="13" width="19" height="28" rx="6" fill="#EC4899"/>
+      <rect x="79" y="13" width="16" height="28" rx="6" fill="#F97316"/>
+      <rect x="16" y="60" width="76" height="10" rx="5" fill="#1E293B"/>
+      <rect x="19" y="62" width="15" height="6" rx="3" fill="#2563EB"/>
+      <rect x="36" y="62" width="15" height="6" rx="3" fill="#06B6D4"/>
+      <rect x="53" y="62" width="15" height="6" rx="3" fill="#EC4899"/>
+      <rect x="70" y="62" width="19" height="6" rx="3" fill="#F97316"/>
+    </g>
+  </g>
+  <g transform="translate(792 490)">
+    <rect width="352" height="120" rx="20" fill="url(#card)" stroke="#243347"/>
+    <text x="18" y="30" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700">Cyberpunk</text>
+    <text x="18" y="52" fill="#7DD3FC" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700">Classiques</text>
+    <text x="18" y="76" fill="#94A3B8" font-family="Segoe UI, Arial, sans-serif" font-size="13">Palette neon cyan magenta violet.</text>
+    <g transform="translate(224 16)">
+      <rect width="108" height="88" rx="16" fill="#0B1220" stroke="#334155"/>
+      <rect x="10" y="10" width="88" height="34" rx="10" fill="#1E293B"/>
+      <rect x="13" y="13" width="19" height="28" rx="6" fill="#00EAFF"/>
+      <rect x="35" y="13" width="19" height="28" rx="6" fill="#FF3BF4"/>
+      <rect x="57" y="13" width="19" height="28" rx="6" fill="#7C3AED"/>
+      <rect x="79" y="13" width="16" height="28" rx="6" fill="#FFFFFF"/>
+      <rect x="16" y="60" width="76" height="10" rx="5" fill="#1E293B"/>
+      <rect x="19" y="62" width="15" height="6" rx="3" fill="#00EAFF"/>
+      <rect x="36" y="62" width="15" height="6" rx="3" fill="#FF3BF4"/>
+      <rect x="53" y="62" width="15" height="6" rx="3" fill="#7C3AED"/>
+      <rect x="70" y="62" width="19" height="6" rx="3" fill="#FFFFFF"/>
+    </g>
+  </g>
+  <text x="72" y="142" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="44" font-weight="700">Custom keyboard effects</text>
+  <text x="72" y="186" fill="#93A4B8" font-family="Segoe UI, Arial, sans-serif" font-size="24">for ASUS laptops, with Ambilight support and live previews</text>
+  <text x="72" y="270" fill="#7DD3FC" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700">What it brings</text>
+  <text x="72" y="314" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="22">• real keyboard-focused effects</text>
+  <text x="72" y="352" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="22">• Ambilight / mirror modes</text>
+  <text x="72" y="390" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="22">• right-side control panel</text>
+  <text x="72" y="428" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="22">• live previews for each effect</text>
+  <text x="72" y="466" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="22">• global intensity + auto-restart</text>
+  <rect x="72" y="530" width="278" height="54" rx="27" fill="#1D4ED8"/>
+  <text x="110" y="564" fill="#FFFFFF" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">ASUS Keyboard FX + Ambilight</text>
+</svg>

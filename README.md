@@ -1,17 +1,19 @@
-# ASUS RGB Studio
+# ASUS Keyboard FX + Ambilight
 
-Custom RGB effects for ASUS laptops, built around a lightweight Windows app and a set of effect engines for the `ASUS G513QY` family and similar Aura-compatible setups.
+Custom keyboard effects and Ambilight-style lighting for ASUS laptops, built around a lightweight Windows app and a set of effect engines for the `ASUS G513QY` family and similar Aura-compatible setups.
 
-This project exists because the default ASUS / Armoury Crate experience can feel limiting for advanced effects. The goal here is simple: keep the hardware control practical, make the effects look better, and provide a cleaner interface for real daily use.
+This project exists because the default ASUS / Armoury Crate experience can feel limiting for advanced effects. The goal here is simple: keep hardware control practical, add better-looking keyboard effects, and bring real Ambilight / mirror-style modes into a cleaner daily-use interface.
+
+![GitHub preview](./docs/github-preview.svg)
 
 ## What it does
 
-- Runs custom RGB effects for keyboard + light bar
+- Runs custom keyboard RGB effects and light bar effects
 - Includes a compact right-side Windows control panel
 - Provides live previews for each effect
 - Stores a global intensity value and applies it live
 - Watches the running effect process and restarts it if it dies
-- Includes ambient / mirror / audio-reactive modes plus handcrafted presets
+- Includes Ambilight / mirror / audio-reactive modes plus handcrafted presets
 
 ## Current highlights
 
@@ -25,6 +27,12 @@ This project exists because the default ASUS / Armoury Crate experience can feel
 - `Prism Flow`
 - `Deep Ocean`
 - `Stack Fall`
+
+## Designed for
+
+- ASUS laptops with Aura-compatible keyboard / light bar behavior
+- people who want visible keyboard effects, not just static presets
+- users who want Ambilight-style lighting without relying only on Armoury Crate
 
 ## Project structure
 
@@ -52,7 +60,7 @@ Run:
 
 ```powershell
 cd D:\asus-ambient-led\rgb-control-ui
-dotnet .\bin\Release\net8.0-windows\AsusRgbStudio.dll
+dotnet .\bin\Release\net8.0-windows\AsusKeyboardFx.dll
 ```
 
 Build:
@@ -84,6 +92,11 @@ This project interacts with proprietary ASUS lighting behavior. Some models may 
 - Cinema mode
 - FPS mode
 - Better hardware mapping for keyboards with richer internal interpolation
+
+## Interface preview
+
+The repository already includes a product preview in [`docs/github-preview.svg`](./docs/github-preview.svg).  
+A real interface screenshot and demo video can be added later in the same `docs/` folder.
 
 ## Support the project
 

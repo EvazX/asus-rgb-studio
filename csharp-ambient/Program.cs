@@ -28,6 +28,7 @@ Console.CancelKeyPress += (_, e) =>
 };
 
 RgbColor[]? lastColors = null;
+RgbColor[]? lastSampledColors = null;
 var frameDelay = TimeSpan.FromSeconds(1.0 / Math.Max(1.0, options.Fps));
 var stopwatch = Stopwatch.StartNew();
 
@@ -37,6 +38,12 @@ while (!options.StopRequested)
 {
     var liveIntensity = RuntimeState.ReadIntensity(options.IntensityBoost);
     var sampled = sampler.CaptureZones(options);
+    if (lastSampledColors is not null && options.Smoothing > 0)
+    {
+        sampled = ColorMath.Smooth(lastSampledColors, sampled, options.Smoothing);
+    }
+
+    lastSampledColors = sampled;
     var boosted = sampled.Select(color => ColorMath.Boost(color, options.SaturationBoost, options.ValueBoost, liveIntensity)).ToArray();
 
     var shouldUpdate = lastColors is null;
@@ -84,6 +91,8 @@ internal sealed record class Options
     public double IntensityBoost { get; init; } = 1.0;
     public int NeutralThreshold { get; init; } = 30;
     public double ColorBias { get; init; } = 3.5;
+    public double Smoothing { get; init; } = 0.16;
+    public string ScreenMode { get; init; } = "bottom";
     public bool Mirror { get; init; }
     public bool Once { get; init; }
     public bool Red { get; init; }
@@ -123,6 +132,8 @@ internal sealed record class Options
                 "--intensity-boost" => options with { IntensityBoost = ParseDouble(ReadValue()) },
                 "--neutral-threshold" => options with { NeutralThreshold = int.Parse(ReadValue()) },
                 "--color-bias" => options with { ColorBias = ParseDouble(ReadValue()) },
+                "--smoothing" => options with { Smoothing = Math.Clamp(ParseDouble(ReadValue()), 0.0, 0.92) },
+                "--screen-mode" => options with { ScreenMode = ReadValue().Trim().ToLowerInvariant() },
                 "--mirror" => options with { Mirror = true },
                 "--hidapi" => options with { HidApiPath = ReadValue() },
                 "--benchmark" => options with { BenchmarkFrames = int.Parse(ReadValue()) },
@@ -230,6 +241,23 @@ internal static class ColorMath
             ClampByte(rgb.B * intensityBoost));
     }
 
+    public static RgbColor[] Smooth(IReadOnlyList<RgbColor> previous, IReadOnlyList<RgbColor> current, double previousWeight)
+    {
+        var weight = Math.Clamp(previousWeight, 0.0, 0.92);
+        var count = Math.Min(previous.Count, current.Count);
+        var smoothed = new RgbColor[count];
+
+        for (var i = 0; i < count; i++)
+        {
+            smoothed[i] = new RgbColor(
+                ClampByte(previous[i].R * weight + current[i].R * (1.0 - weight)),
+                ClampByte(previous[i].G * weight + current[i].G * (1.0 - weight)),
+                ClampByte(previous[i].B * weight + current[i].B * (1.0 - weight)));
+        }
+
+        return smoothed;
+    }
+
     private static void RgbToHsv(RgbColor color, out double hue, out double saturation, out double value)
     {
         var r = color.R / 255.0;
@@ -320,12 +348,17 @@ internal sealed class ScreenSampler : IDisposable
         var width = NativeMethods.GetSystemMetrics(AppConstants.SmCxVirtualScreen);
         var height = NativeMethods.GetSystemMetrics(AppConstants.SmCyVirtualScreen);
 
+        var mode = options.ScreenMode;
+        var useFullScreen = mode is "full" or "mirror" or "vibrant" or "dominant";
+        var useDominantColor = mode is "vibrant" or "dominant";
         var captureWidth = Math.Max(AppConstants.ZoneCount * Math.Max(1, options.SamplesX), AppConstants.ZoneCount);
-        var captureHeight = Math.Max(2, options.SamplesY * 3);
+        var captureHeight = Math.Max(2, options.SamplesY * (useFullScreen ? 5 : 3));
         EnsureBuffers(captureWidth, captureHeight);
 
-        var sampledHeight = Math.Max(1, (int)(height * Math.Clamp(options.VerticalBias, 0.1, 1.0)));
-        var startY = top + height - sampledHeight;
+        var sampledHeight = useFullScreen
+            ? height
+            : Math.Max(1, (int)(height * Math.Clamp(options.VerticalBias, 0.1, 1.0)));
+        var startY = useFullScreen ? top : top + height - sampledHeight;
         var zones = new RgbColor[AppConstants.ZoneCount];
         var captureZoneWidth = captureWidth / AppConstants.ZoneCount;
 
@@ -376,6 +409,10 @@ internal sealed class ScreenSampler : IDisposable
                     long fallbackG = 0;
                     long fallbackB = 0;
                     long fallbackCount = 0;
+                    double[]? bucketWeights = useDominantColor ? new double[512] : null;
+                    double[]? bucketR = useDominantColor ? new double[512] : null;
+                    double[]? bucketG = useDominantColor ? new double[512] : null;
+                    double[]? bucketB = useDominantColor ? new double[512] : null;
 
                     for (var y = 0; y < captureHeight; y++)
                     {
@@ -411,6 +448,38 @@ internal sealed class ScreenSampler : IDisposable
                             gTotal += green * weight;
                             bTotal += blue * weight;
                             weightTotal += weight;
+
+                            if (useDominantColor)
+                            {
+                                var bucket = ((red >> 5) << 6) | ((green >> 5) << 3) | (blue >> 5);
+                                bucketWeights![bucket] += weight;
+                                bucketR![bucket] += red * weight;
+                                bucketG![bucket] += green * weight;
+                                bucketB![bucket] += blue * weight;
+                            }
+                        }
+                    }
+
+                    if (useDominantColor && bucketWeights is not null)
+                    {
+                        var bestBucket = 0;
+                        var bestWeight = 0.0;
+                        for (var bucket = 0; bucket < bucketWeights.Length; bucket++)
+                        {
+                            if (bucketWeights[bucket] > bestWeight)
+                            {
+                                bestBucket = bucket;
+                                bestWeight = bucketWeights[bucket];
+                            }
+                        }
+
+                        if (bestWeight > 0)
+                        {
+                            zones[zoneIndex] = new RgbColor(
+                                (int)(bucketR![bestBucket] / bestWeight),
+                                (int)(bucketG![bestBucket] / bestWeight),
+                                (int)(bucketB![bestBucket] / bestWeight));
+                            continue;
                         }
                     }
 
@@ -515,10 +584,11 @@ internal sealed class HidController : IDisposable
 
     public void ApplyColors(IReadOnlyList<RgbColor> colors)
     {
+        Span<byte> packet = stackalloc byte[17];
         for (var index = 0; index < colors.Count; index++)
         {
             var color = colors[index];
-            Span<byte> packet = stackalloc byte[17];
+            packet.Clear();
             packet[0] = 0x5D;
             packet[1] = 0xB3;
             packet[2] = (byte)(index + 1);

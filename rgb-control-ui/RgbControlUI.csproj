@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <ApplicationIcon>app.ico</ApplicationIcon>
-    <AssemblyName>AsusRgbStudio</AssemblyName>
-    <RootNamespace>AsusRgbStudio</RootNamespace>
+    <AssemblyName>AsusKeyboardFx</AssemblyName>
+    <RootNamespace>AsusKeyboardFx</RootNamespace>
   </PropertyGroup>
 </Project>
