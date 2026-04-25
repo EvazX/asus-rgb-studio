@@ -63,6 +63,16 @@ cd D:\asus-ambient-led\rgb-control-ui
 dotnet .\bin\Release\net8.0-windows\AsusKeyboardFx.dll
 ```
 
+## One-command install
+
+After a GitHub release is available, Windows users can install the latest packaged version with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -NoProfile -Command "irm https://raw.githubusercontent.com/EvazX/asus-rgb-studio/master/install.ps1 | iex"
+```
+
+The installer downloads the latest release ZIP, extracts it to `%LOCALAPPDATA%\AsusKeyboardFx`, and creates a desktop shortcut.
+
 Build:
 
 ```powershell
