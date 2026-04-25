@@ -35,7 +35,7 @@ internal sealed class FxDeckForm : Form
     public FxDeckForm()
     {
         var workingArea = Screen.PrimaryScreen?.WorkingArea ?? new Rectangle(0, 0, 1600, 900);
-        var width = Math.Clamp(workingArea.Width / 4, 460, 560);
+        var width = Math.Clamp(workingArea.Width / 4, 480, 560);
         var height = Math.Max(720, workingArea.Height - 36);
 
         Text = "ASUS Keyboard FX + Ambilight";
@@ -56,9 +56,9 @@ internal sealed class FxDeckForm : Form
             Padding = new Padding(16, 14, 16, 14),
             RowCount = 5
         };
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 98));
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 142));
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 96));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 82));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 124));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 88));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 52));
         Controls.Add(root);
@@ -69,22 +69,22 @@ internal sealed class FxDeckForm : Form
         _heroPreview = new LivePreview(EffectCatalog.Placeholder)
         {
             Dock = DockStyle.Right,
-            Width = 172,
+            Width = 156,
             Margin = new Padding(8)
         };
         _activeName = new Label
         {
             Text = "Aucun effet",
             Dock = DockStyle.Top,
-            Height = 34,
-            Font = new Font("Segoe UI Variable Display", 20f, FontStyle.Bold),
+            Height = 30,
+            Font = new Font("Segoe UI Variable Display", 18f, FontStyle.Bold),
             ForeColor = Color.White
         };
         _activeDetail = new Label
         {
-            Text = "Choisis un rendu, je garde le moteur vivant derriere.",
+            Text = "Selectionne un rendu, l'app garde le moteur vivant en arriere-plan.",
             Dock = DockStyle.Top,
-            Height = 44,
+            Height = 40,
             Font = new Font("Segoe UI", 9.5f),
             ForeColor = Theme.Muted
         };
@@ -145,7 +145,7 @@ internal sealed class FxDeckForm : Form
             FlowDirection = FlowDirection.TopDown,
             WrapContents = false,
             AutoScroll = true,
-            Padding = new Padding(0, 4, 4, 8)
+            Padding = new Padding(0, 6, 4, 8)
         };
         root.Controls.Add(_effectFlow, 0, 3);
 
@@ -184,7 +184,7 @@ internal sealed class FxDeckForm : Form
         var panel = new GlowPanel
         {
             Dock = DockStyle.Fill,
-            Padding = new Padding(18, 18, 18, 14),
+            Padding = new Padding(18, 16, 18, 12),
             Main = Color.FromArgb(15, 23, 42),
             Accent = Color.FromArgb(8, 145, 178)
         };
@@ -197,7 +197,7 @@ internal sealed class FxDeckForm : Form
         {
             Dock = DockStyle.Fill,
             Padding = new Padding(12, 8, 12, 8),
-            Main = Color.FromArgb(13, 18, 28),
+            Main = Color.FromArgb(10, 15, 23),
             Accent = Color.FromArgb(234, 88, 12)
         };
     }
@@ -627,8 +627,8 @@ internal sealed class HeroHeader : Control
         using var subtitle = new Font("Segoe UI", 9.5f);
         using var titleBrush = new SolidBrush(Color.White);
         using var subtitleBrush = new SolidBrush(Theme.Muted);
-        e.Graphics.DrawString("ASUS Keyboard FX", title, titleBrush, 18, 18);
-        e.Graphics.DrawString("Clavier 4 zones horizontales + Ambilight reactif", subtitle, subtitleBrush, 20, 57);
+        e.Graphics.DrawString("ASUS Keyboard FX", title, titleBrush, 18, 14);
+        e.Graphics.DrawString("Effets 4 zones + Ambilight", subtitle, subtitleBrush, 20, 51);
     }
 
     private static void DrawOrbit(Graphics graphics, float cx, float cy, float radius, double time, Color color)
@@ -702,15 +702,15 @@ internal sealed class FxTile : Control
     public FxTile(EffectDef effect)
     {
         Effect = effect;
-        Height = 108;
-        Margin = new Padding(0, 0, 0, 12);
+        Height = 98;
+        Margin = new Padding(0, 0, 0, 10);
         DoubleBuffered = true;
         BackColor = Theme.Deep;
 
         _preview = new LivePreview(effect)
         {
             Dock = DockStyle.Right,
-            Width = 140,
+            Width = 128,
             Margin = new Padding(8)
         };
 
@@ -733,15 +733,15 @@ internal sealed class FxTile : Control
         {
             Text = effect.Name,
             Dock = DockStyle.Top,
-            Height = 25,
-            Font = new Font("Segoe UI Semibold", 13.5f, FontStyle.Bold),
+            Height = 23,
+            Font = new Font("Segoe UI Semibold", 12.8f, FontStyle.Bold),
             ForeColor = Color.White
         };
         var meta = new Label
         {
             Text = effect.Group,
             Dock = DockStyle.Top,
-            Height = 20,
+            Height = 18,
             Font = new Font("Segoe UI", 8.8f),
             ForeColor = effect.Accent
         };
@@ -749,7 +749,7 @@ internal sealed class FxTile : Control
         {
             Text = effect.Description,
             Dock = DockStyle.Fill,
-            Font = new Font("Segoe UI", 9.2f),
+            Font = new Font("Segoe UI", 9f),
             ForeColor = Theme.Muted
         };
         var buttonHost = new Panel { Dock = DockStyle.Bottom, Height = 34 };
@@ -768,9 +768,9 @@ internal sealed class FxTile : Control
     {
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
         using var path = Ui.RoundRect(new RectangleF(0, 0, Width - 1, Height - 1), 22);
-        using var bg = new LinearGradientBrush(ClientRectangle, Color.FromArgb(13, 19, 30), Color.FromArgb(8, 12, 18), LinearGradientMode.ForwardDiagonal);
-        using var border = new Pen(_active ? Effect.Accent : Color.FromArgb(34, 45, 61), _active ? 2.2f : 1f);
-        using var glow = new SolidBrush(Color.FromArgb(_active ? 76 : 34, Effect.Accent));
+        using var bg = new LinearGradientBrush(ClientRectangle, Color.FromArgb(11, 17, 27), Color.FromArgb(7, 11, 17), LinearGradientMode.ForwardDiagonal);
+        using var border = new Pen(_active ? Effect.Accent : Color.FromArgb(28, 38, 52), _active ? 2.0f : 1f);
+        using var glow = new SolidBrush(Color.FromArgb(_active ? 62 : 22, Effect.Accent));
         e.Graphics.FillPath(bg, path);
         e.Graphics.FillEllipse(glow, Width - 178, 16, 18, 18);
         e.Graphics.DrawPath(border, path);

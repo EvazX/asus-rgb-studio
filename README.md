@@ -65,13 +65,15 @@ dotnet .\bin\Release\net8.0-windows\AsusKeyboardFx.dll
 
 ## One-command install
 
-After a GitHub release is available, Windows users can install the latest packaged version with:
+Windows users can install the latest packaged release with:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -NoProfile -Command "irm https://raw.githubusercontent.com/EvazX/asus-rgb-studio/master/install.ps1 | iex"
 ```
 
 The installer downloads the latest release ZIP, extracts it to `%LOCALAPPDATA%\AsusKeyboardFx`, and creates a desktop shortcut.
+
+The shortcut launches `AsusKeyboardFx.exe` directly, so no terminal window stays open while the app is running.
 
 Build:
 

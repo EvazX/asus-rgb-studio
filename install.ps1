@@ -59,9 +59,10 @@ if (Test-Path $InstallDir) {
 New-Item -ItemType Directory -Path (Split-Path $InstallDir -Parent) -Force | Out-Null
 Move-Item -Path $packageRoot.FullName -Destination $InstallDir
 
+$appExe = Join-Path $InstallDir "app\AsusKeyboardFx.exe"
 $launcher = Join-Path $InstallDir "START_ASUS_KEYBOARD_FX.cmd"
-if (-not (Test-Path $launcher)) {
-    throw "Launcher not found after install: $launcher"
+if (-not (Test-Path $appExe)) {
+    throw "Application executable not found after install: $appExe"
 }
 
 Write-Step "Creating desktop shortcut"
@@ -69,10 +70,10 @@ $desktop = [Environment]::GetFolderPath("Desktop")
 $shortcutPath = Join-Path $desktop "ASUS Keyboard FX.lnk"
 $shell = New-Object -ComObject WScript.Shell
 $shortcut = $shell.CreateShortcut($shortcutPath)
-$shortcut.TargetPath = "cmd.exe"
-$shortcut.Arguments = "/c `"$launcher`""
+$shortcut.TargetPath = $appExe
+$shortcut.Arguments = ""
 $shortcut.WorkingDirectory = $InstallDir
-$shortcut.IconLocation = Join-Path $InstallDir "rgb-control-ui\bin\Release\net8.0-windows\app.ico"
+$shortcut.IconLocation = $appExe
 $shortcut.Save()
 
 Write-Host ""
