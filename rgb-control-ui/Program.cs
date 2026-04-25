@@ -689,7 +689,7 @@ internal sealed class FxTile : Control
         Height = 108;
         Margin = new Padding(0, 0, 0, 12);
         DoubleBuffered = true;
-        BackColor = Color.Transparent;
+        BackColor = Theme.Deep;
 
         _preview = new LivePreview(effect)
         {
