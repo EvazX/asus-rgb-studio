@@ -14,6 +14,7 @@ rgb_intensity.txt
 
 # Publish / build artifacts
 dist/
+release/
 *.exe
 *.dll
 

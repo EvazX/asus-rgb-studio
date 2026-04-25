@@ -8,9 +8,9 @@ Application.Run(new FxDeckForm());
 
 internal sealed class FxDeckForm : Form
 {
-    private const string BaseDir = @"D:\asus-ambient-led";
-    private const string StateFile = @"D:\asus-ambient-led\rgb_intensity.txt";
-    private const string ProcessStateFile = @"D:\asus-ambient-led\rgb_effect_pids.txt";
+    private static readonly string BaseDir = ResolveBaseDir();
+    private static readonly string StateFile = Path.Combine(BaseDir, "rgb_intensity.txt");
+    private static readonly string ProcessStateFile = Path.Combine(BaseDir, "rgb_effect_pids.txt");
 
     private readonly List<EffectDef> _effects = EffectCatalog.Build();
     private readonly List<FilterChip> _chips = [];
@@ -321,6 +321,7 @@ internal sealed class FxDeckForm : Form
         };
 
         var intensity = (_intensityPercent / 100.0).ToString(CultureInfo.InvariantCulture);
+        startInfo.Environment["RGB_STATE_FILE"] = StateFile;
         if (string.Equals(effect.FileName, "python", StringComparison.OrdinalIgnoreCase))
         {
             startInfo.Environment["RGB_INTENSITY"] = intensity;
@@ -411,7 +412,8 @@ internal sealed class FxDeckForm : Form
                 Arguments = "set_white.py --red 255 --green 255 --blue 255",
                 WorkingDirectory = BaseDir,
                 UseShellExecute = false,
-                CreateNoWindow = true
+                CreateNoWindow = true,
+                Environment = { ["RGB_STATE_FILE"] = StateFile }
             })?.Dispose();
         }
         catch (Exception ex)
@@ -546,7 +548,8 @@ internal sealed class FxDeckForm : Form
                 Arguments = "latency_probe.py --pattern",
                 WorkingDirectory = BaseDir,
                 UseShellExecute = false,
-                CreateNoWindow = false
+                CreateNoWindow = false,
+                Environment = { ["RGB_STATE_FILE"] = StateFile }
             })?.Dispose();
             SetStatus("Patterns de test lances");
         }
@@ -579,6 +582,19 @@ internal sealed class FxDeckForm : Form
         button.FlatAppearance.BorderSize = 0;
         button.Click += click;
         return button;
+    }
+
+    private static string ResolveBaseDir()
+    {
+        for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
+        {
+            if (File.Exists(Path.Combine(dir.FullName, "effects_common.py")) && File.Exists(Path.Combine(dir.FullName, "set_white.py")))
+            {
+                return dir.FullName;
+            }
+        }
+
+        return @"D:\asus-ambient-led";
     }
 }
 

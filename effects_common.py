@@ -4,7 +4,7 @@ import os
 from typing import Iterable
 
 Color = tuple[int, int, int]
-STATE_FILE = r"D:\asus-ambient-led\rgb_intensity.txt"
+STATE_FILE = os.environ.get("RGB_STATE_FILE", r"D:\asus-ambient-led\rgb_intensity.txt")
 ZONE_COUNT = 4
 
 

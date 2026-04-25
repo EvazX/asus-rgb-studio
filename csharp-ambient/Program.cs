@@ -169,9 +169,10 @@ internal static class RuntimeState
     {
         try
         {
-            if (File.Exists(AppConstants.IntensityStateFile))
+            var stateFile = Environment.GetEnvironmentVariable("RGB_STATE_FILE") ?? AppConstants.IntensityStateFile;
+            if (File.Exists(stateFile))
             {
-                var text = File.ReadAllText(AppConstants.IntensityStateFile).Trim();
+                var text = File.ReadAllText(stateFile).Trim();
                 if (!string.IsNullOrWhiteSpace(text))
                 {
                     return Math.Clamp(double.Parse(text, System.Globalization.CultureInfo.InvariantCulture), 0.0, 1.0);
