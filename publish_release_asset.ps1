@@ -24,7 +24,7 @@ Highlights:
 - duplicate-instance protection
 
 Install with one PowerShell command:
-powershell -ExecutionPolicy Bypass -NoProfile -Command "irm https://raw.githubusercontent.com/EvazX/asus-rgb-studio/master/install.ps1 | iex"
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force; irm https://raw.githubusercontent.com/EvazX/asus-rgb-studio/master/install.ps1 | iex
 "@
 
 $existing = gh release view $Version 2>$null

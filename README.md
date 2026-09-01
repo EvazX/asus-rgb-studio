@@ -9,10 +9,16 @@ This project exists because the default ASUS / Armoury Crate experience can feel
 Open PowerShell and run:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -NoProfile -Command "irm https://raw.githubusercontent.com/EvazX/asus-rgb-studio/master/install.ps1 | iex"
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force; irm https://raw.githubusercontent.com/EvazX/asus-rgb-studio/master/install.ps1 | iex
 ```
 
 The installer downloads the latest GitHub Release, installs it in `%LOCALAPPDATA%\AsusKeyboardFx`, creates shortcuts, and launches the app.
+
+If your terminal blocks that command, run this fallback:
+
+```powershell
+$u='https://raw.githubusercontent.com/EvazX/asus-rgb-studio/master/install.ps1'; $f="$env:TEMP\asus-keyboard-fx-install.ps1"; Invoke-WebRequest $u -OutFile $f; powershell -ExecutionPolicy Bypass -File $f
+```
 
 ![GitHub preview](./docs/github-preview.svg)
 

@@ -64,7 +64,7 @@ Quick start:
 3. Double-click START_ASUS_KEYBOARD_FX.cmd for the control panel, or START_DAILY_AMBILIGHT.cmd for the daily mirror profile.
 
 One-command install from GitHub:
-powershell -ExecutionPolicy Bypass -NoProfile -Command "irm https://raw.githubusercontent.com/EvazX/asus-rgb-studio/master/install.ps1 | iex"
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force; irm https://raw.githubusercontent.com/EvazX/asus-rgb-studio/master/install.ps1 | iex
 
 Maintainer release upload:
 powershell -ExecutionPolicy Bypass -File .\publish_release_asset.ps1 -Version $Version
