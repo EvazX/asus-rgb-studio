@@ -1,5 +1,7 @@
 param(
-    [string]$InstallDir = "$env:LOCALAPPDATA\AsusKeyboardFx"
+    [string]$InstallDir = "$env:LOCALAPPDATA\AsusKeyboardFx",
+    [switch]$NoLaunch,
+    [switch]$NoDesktopShortcut
 )
 
 $ErrorActionPreference = "Stop"
@@ -11,12 +13,34 @@ function Write-Step {
     Write-Host "==> $Message" -ForegroundColor Cyan
 }
 
+function New-AppShortcut {
+    param(
+        [string]$ShortcutPath,
+        [string]$TargetPath,
+        [string]$WorkingDirectory
+    )
+
+    $shell = New-Object -ComObject WScript.Shell
+    $shortcut = $shell.CreateShortcut($ShortcutPath)
+    $shortcut.TargetPath = $TargetPath
+    $shortcut.Arguments = ""
+    $shortcut.WorkingDirectory = $WorkingDirectory
+    $shortcut.IconLocation = $TargetPath
+    $shortcut.Description = "ASUS Keyboard FX + Ambilight"
+    $shortcut.Save()
+}
+
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
 Write-Step "Reading latest GitHub release"
 $release = Invoke-RestMethod -Uri $ApiUrl -Headers @{ "User-Agent" = "AsusKeyboardFxInstaller" }
-$asset = $release.assets | Where-Object { $_.name -like "*.zip" } | Select-Object -First 1
+$asset = $release.assets |
+    Where-Object { $_.name -like "asus-rgb-studio-*.zip" } |
+    Sort-Object -Property name -Descending |
+    Select-Object -First 1
 
 if (-not $asset) {
-    throw "No ZIP asset found on the latest GitHub release."
+    throw "No packaged ZIP asset found on the latest GitHub release. The project owner must attach the release ZIP before this one-command installer can work."
 }
 
 $tempRoot = Join-Path $env:TEMP "AsusKeyboardFxInstall"
@@ -29,6 +53,9 @@ if (Test-Path $tempRoot) {
 
 New-Item -ItemType Directory -Path $tempRoot | Out-Null
 New-Item -ItemType Directory -Path $extractPath | Out-Null
+
+Write-Step "Stopping previous app instance"
+Get-Process AsusKeyboardFx -ErrorAction SilentlyContinue | Stop-Process -Force
 
 Write-Step "Downloading $($asset.name)"
 Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $zipPath -UseBasicParsing
@@ -55,23 +82,24 @@ if (-not (Test-Path $appExe)) {
     throw "Application executable not found after install: $appExe"
 }
 
-Write-Step "Creating desktop shortcut"
-$desktop = [Environment]::GetFolderPath("Desktop")
-$shortcutPath = Join-Path $desktop "ASUS Keyboard FX.lnk"
-$shell = New-Object -ComObject WScript.Shell
-$shortcut = $shell.CreateShortcut($shortcutPath)
-$shortcut.TargetPath = $appExe
-$shortcut.Arguments = ""
-$shortcut.WorkingDirectory = $InstallDir
-$shortcut.IconLocation = $appExe
-$shortcut.Save()
+if (-not $NoDesktopShortcut) {
+    Write-Step "Creating desktop shortcut"
+    $desktop = [Environment]::GetFolderPath("Desktop")
+    $desktopShortcut = Join-Path $desktop "ASUS Keyboard FX.lnk"
+    New-AppShortcut -ShortcutPath $desktopShortcut -TargetPath $appExe -WorkingDirectory $InstallDir
+}
+
+Write-Step "Creating Start Menu shortcut"
+$startMenu = Join-Path ([Environment]::GetFolderPath("StartMenu")) "Programs"
+$startMenuShortcut = Join-Path $startMenu "ASUS Keyboard FX.lnk"
+New-AppShortcut -ShortcutPath $startMenuShortcut -TargetPath $appExe -WorkingDirectory $InstallDir
 
 Write-Host ""
 Write-Host "Installed ASUS Keyboard FX to:" -ForegroundColor Green
 Write-Host "  $InstallDir"
 Write-Host ""
-Write-Host "Desktop shortcut created:" -ForegroundColor Green
-Write-Host "  $shortcutPath"
+Write-Host "Shortcut created:" -ForegroundColor Green
+Write-Host "  $startMenuShortcut"
 Write-Host ""
 
 if (-not (Test-Path "C:\Program Files\OpenRGB\hidapi.dll")) {
@@ -80,4 +108,13 @@ if (-not (Test-Path "C:\Program Files\OpenRGB\hidapi.dll")) {
 }
 
 Write-Host ""
-Write-Host "You can now launch ASUS Keyboard FX from the desktop shortcut." -ForegroundColor Green
+if (-not $NoLaunch) {
+    Write-Step "Launching ASUS Keyboard FX"
+    Start-Process -FilePath $appExe -WorkingDirectory $InstallDir
+}
+
+if (Test-Path $tempRoot) {
+    Remove-Item -LiteralPath $tempRoot -Recurse -Force
+}
+
+Write-Host "ASUS Keyboard FX is ready." -ForegroundColor Green

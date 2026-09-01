@@ -1,5 +1,5 @@
 param(
-    [string]$Version = "v0.1.1"
+    [string]$Version = "v0.1.2"
 )
 
 $ErrorActionPreference = "Stop"
@@ -34,7 +34,7 @@ Copy-Item -Path (Join-Path $AmbientPublish "*") -Destination (Join-Path $Stage "
 Copy-Item -Path (Join-Path $AudioPublish "*") -Destination (Join-Path $Stage "csharp-audio\bin\Release\net8.0-windows") -Recurse -Force
 Copy-Item -Path (Join-Path $RepoRoot "*.py") -Destination $Stage -Force
 Copy-Item -Path (Join-Path $RepoRoot "*.html") -Destination $Stage -Force
-Copy-Item -Path (Join-Path $RepoRoot "README.md"),(Join-Path $RepoRoot "SUPPORT.md"),(Join-Path $RepoRoot "PRESENTATION_FR.md"),(Join-Path $RepoRoot "install.ps1") -Destination $Stage -Force
+Copy-Item -Path (Join-Path $RepoRoot "README.md"),(Join-Path $RepoRoot "SUPPORT.md"),(Join-Path $RepoRoot "PRESENTATION_FR.md"),(Join-Path $RepoRoot "install.ps1"),(Join-Path $RepoRoot "publish_release_asset.ps1") -Destination $Stage -Force
 Copy-Item -Path (Join-Path $RepoRoot "docs\github-preview.svg") -Destination (Join-Path $Stage "docs") -Force
 
 @'
@@ -65,6 +65,9 @@ Quick start:
 
 One-command install from GitHub:
 powershell -ExecutionPolicy Bypass -NoProfile -Command "irm https://raw.githubusercontent.com/EvazX/asus-rgb-studio/master/install.ps1 | iex"
+
+Maintainer release upload:
+powershell -ExecutionPolicy Bypass -File .\publish_release_asset.ps1 -Version $Version
 
 Notes:
 - This is an enthusiast tool, not an official ASUS utility.

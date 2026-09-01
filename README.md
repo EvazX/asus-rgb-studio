@@ -4,6 +4,16 @@ Custom keyboard effects and Ambilight-style lighting for ASUS laptops, built aro
 
 This project exists because the default ASUS / Armoury Crate experience can feel limiting for advanced effects. The goal here is simple: keep hardware control practical, add better-looking keyboard effects, and bring real Ambilight / mirror-style modes into a cleaner daily-use interface.
 
+## Install in one command
+
+Open PowerShell and run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -NoProfile -Command "irm https://raw.githubusercontent.com/EvazX/asus-rgb-studio/master/install.ps1 | iex"
+```
+
+The installer downloads the latest GitHub Release, installs it in `%LOCALAPPDATA%\AsusKeyboardFx`, creates shortcuts, and launches the app.
+
 ![GitHub preview](./docs/github-preview.svg)
 
 ## What it does
@@ -84,23 +94,17 @@ dotnet .\csharp-ambient\bin\Release\net8.0-windows\AmbientBar.dll
 
 It runs full-screen mirror sampling at a conservative update rate, with smoothing and automatic HID reconnect after Windows sleep/resume. Optional profiles are available with `--profile gaming` and `--profile cinema`.
 
-## One-command install
-
-Windows users can install the latest packaged release with:
-
-```powershell
-powershell -ExecutionPolicy Bypass -NoProfile -Command "irm https://raw.githubusercontent.com/EvazX/asus-rgb-studio/master/install.ps1 | iex"
-```
-
-The installer downloads the latest release ZIP, extracts it to `%LOCALAPPDATA%\AsusKeyboardFx`, and creates a desktop shortcut.
-
-The shortcut launches `AsusKeyboardFx.exe` directly, so no terminal window stays open while the app is running.
-
 Build:
 
 ```powershell
 cd D:\_Projets_Codex\02_Archives_Techniques\asus-ambient-led
 powershell -ExecutionPolicy Bypass -File .\build_release.ps1
+```
+
+Publish the ZIP to GitHub Releases:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\publish_release_asset.ps1 -Version v0.1.2
 ```
 
 Clean local build clutter:
