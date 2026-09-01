@@ -104,7 +104,7 @@ powershell -ExecutionPolicy Bypass -File .\build_release.ps1
 Publish the ZIP to GitHub Releases:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\publish_release_asset.ps1 -Version v0.1.2
+powershell -ExecutionPolicy Bypass -File .\publish_release_asset.ps1 -Version v0.1.3
 ```
 
 Clean local build clutter:
