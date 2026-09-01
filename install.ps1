@@ -11,16 +11,6 @@ function Write-Step {
     Write-Host "==> $Message" -ForegroundColor Cyan
 }
 
-function Test-DotNetDesktopRuntime {
-    try {
-        $runtimes = & dotnet --list-runtimes 2>$null
-        return [bool]($runtimes | Where-Object { $_ -match "Microsoft.WindowsDesktop.App 8\." })
-    }
-    catch {
-        return $false
-    }
-}
-
 Write-Step "Reading latest GitHub release"
 $release = Invoke-RestMethod -Uri $ApiUrl -Headers @{ "User-Agent" = "AsusKeyboardFxInstaller" }
 $asset = $release.assets | Where-Object { $_.name -like "*.zip" } | Select-Object -First 1
@@ -83,11 +73,6 @@ Write-Host ""
 Write-Host "Desktop shortcut created:" -ForegroundColor Green
 Write-Host "  $shortcutPath"
 Write-Host ""
-
-if (-not (Test-DotNetDesktopRuntime)) {
-    Write-Host "Important: .NET 8 Desktop Runtime x64 is required." -ForegroundColor Yellow
-    Write-Host "Download: https://dotnet.microsoft.com/en-us/download/dotnet/8.0"
-}
 
 if (-not (Test-Path "C:\Program Files\OpenRGB\hidapi.dll")) {
     Write-Host "Important: hidapi.dll was not found at C:\Program Files\OpenRGB\hidapi.dll." -ForegroundColor Yellow

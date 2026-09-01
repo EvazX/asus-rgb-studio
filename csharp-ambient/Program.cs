@@ -2,11 +2,22 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
+using Microsoft.Win32;
 using System.Runtime.InteropServices;
 
 var options = Options.Parse(args);
 using var hid = new HidController(options.HidApiPath);
 using var sampler = new ScreenSampler();
+var resumeRequested = false;
+
+try
+{
+    Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.BelowNormal;
+}
+catch
+{
+    // Priority is a comfort setting only; the sync loop still works without it.
+}
 
 if (options.Red)
 {
@@ -27,42 +38,90 @@ Console.CancelKeyPress += (_, e) =>
     options.StopRequested = true;
 };
 
+SystemEvents.PowerModeChanged += (_, e) =>
+{
+    if (e.Mode == PowerModes.Suspend)
+    {
+        hid.CloseDevice();
+    }
+    else if (e.Mode == PowerModes.Resume)
+    {
+        resumeRequested = true;
+    }
+};
+
 RgbColor[]? lastColors = null;
 RgbColor[]? lastSampledColors = null;
 var frameDelay = TimeSpan.FromSeconds(1.0 / Math.Max(1.0, options.Fps));
 var stopwatch = Stopwatch.StartNew();
+var nextErrorLogUtc = DateTime.MinValue;
 
-Console.WriteLine("C# ambient sync active. Press Ctrl+C to stop.");
+Console.WriteLine($"C# ambient sync active ({options.Profile} profile). Press Ctrl+C to stop.");
 
 while (!options.StopRequested)
 {
-    var liveIntensity = RuntimeState.ReadIntensity(options.IntensityBoost);
-    var sampled = sampler.CaptureZones(options);
-    if (lastSampledColors is not null && options.Smoothing > 0)
+    try
     {
-        sampled = ColorMath.Smooth(lastSampledColors, sampled, options.Smoothing);
-    }
-
-    lastSampledColors = sampled;
-    var boosted = sampled.Select(color => ColorMath.Boost(color, options.SaturationBoost, options.ValueBoost, liveIntensity)).ToArray();
-
-    var shouldUpdate = lastColors is null;
-    if (lastColors is not null)
-    {
-        for (var i = 0; i < boosted.Length; i++)
+        if (resumeRequested)
         {
-            if (ColorMath.Distance(lastColors[i], boosted[i]) >= options.Threshold)
+            resumeRequested = false;
+            sampler.RefreshDesktopDc();
+            hid.Reopen(options.ResumeReconnectWindow);
+            lastColors = null;
+            lastSampledColors = null;
+            Thread.Sleep(options.ResumeSettlingDelay);
+        }
+
+        var liveIntensity = RuntimeState.ReadIntensity(options.IntensityBoost);
+        var sampled = sampler.CaptureZones(options);
+        if (lastSampledColors is not null && options.Smoothing > 0)
+        {
+            sampled = ColorMath.Smooth(lastSampledColors, sampled, options.Smoothing);
+        }
+
+        lastSampledColors = sampled;
+        var boosted = sampled.Select(color => ColorMath.Boost(color, options.SaturationBoost, options.ValueBoost, liveIntensity)).ToArray();
+
+        var shouldUpdate = lastColors is null;
+        if (lastColors is not null)
+        {
+            for (var i = 0; i < boosted.Length; i++)
             {
-                shouldUpdate = true;
-                break;
+                if (ColorMath.Distance(lastColors[i], boosted[i]) >= options.Threshold)
+                {
+                    shouldUpdate = true;
+                    break;
+                }
             }
         }
-    }
 
-    if (shouldUpdate)
+        if (shouldUpdate)
+        {
+            hid.ApplyColors(boosted);
+            lastColors = boosted;
+        }
+    }
+    catch (Exception ex) when (!options.Once && !options.StopRequested)
     {
-        hid.ApplyColors(boosted);
-        lastColors = boosted;
+        if (DateTime.UtcNow >= nextErrorLogUtc)
+        {
+            Console.WriteLine($"Ambient sync paused: {ex.Message}");
+            nextErrorLogUtc = DateTime.UtcNow.AddSeconds(8);
+        }
+
+        lastColors = null;
+        lastSampledColors = null;
+        try
+        {
+            sampler.RefreshDesktopDc();
+        }
+        catch
+        {
+            // The desktop can be temporarily unavailable while Windows is locking or resuming.
+        }
+        hid.CloseDevice();
+        Thread.Sleep(options.ErrorBackoff);
+        hid.TryOpenDevice();
     }
 
     if (options.Once)
@@ -81,24 +140,28 @@ while (!options.StopRequested)
 
 internal sealed record class Options
 {
-    public double Fps { get; init; } = 28;
+    public string Profile { get; init; } = "daily";
+    public double Fps { get; init; } = 20;
     public int SamplesX { get; init; } = 6;
     public int SamplesY { get; init; } = 4;
-    public int Threshold { get; init; } = 3;
+    public int Threshold { get; init; } = 4;
     public double VerticalBias { get; init; } = 0.22;
-    public double SaturationBoost { get; init; } = 3.0;
-    public double ValueBoost { get; init; } = 0.9;
+    public double SaturationBoost { get; init; } = 2.8;
+    public double ValueBoost { get; init; } = 0.82;
     public double IntensityBoost { get; init; } = 1.0;
-    public int NeutralThreshold { get; init; } = 30;
-    public double ColorBias { get; init; } = 3.5;
-    public double Smoothing { get; init; } = 0.16;
-    public string ScreenMode { get; init; } = "bottom";
-    public bool Mirror { get; init; }
+    public int NeutralThreshold { get; init; } = 28;
+    public double ColorBias { get; init; } = 3.2;
+    public double Smoothing { get; init; } = 0.32;
+    public string ScreenMode { get; init; } = "full";
+    public bool Mirror { get; init; } = true;
     public bool Once { get; init; }
     public bool Red { get; init; }
     public int BenchmarkFrames { get; init; }
     public bool StopRequested { get; set; }
     public string HidApiPath { get; init; } = @"C:\Program Files\OpenRGB\hidapi.dll";
+    public TimeSpan ErrorBackoff { get; init; } = TimeSpan.FromMilliseconds(850);
+    public TimeSpan ResumeSettlingDelay { get; init; } = TimeSpan.FromMilliseconds(1200);
+    public TimeSpan ResumeReconnectWindow { get; init; } = TimeSpan.FromSeconds(12);
 
     public static Options Parse(string[] args)
     {
@@ -122,6 +185,7 @@ internal sealed record class Options
 
             options = arg switch
             {
+                "--profile" => ApplyProfile(options, ReadValue()),
                 "--fps" => options with { Fps = ParseDouble(ReadValue()) },
                 "--samples-x" => options with { SamplesX = int.Parse(ReadValue()) },
                 "--samples-y" => options with { SamplesY = int.Parse(ReadValue()) },
@@ -135,6 +199,7 @@ internal sealed record class Options
                 "--smoothing" => options with { Smoothing = Math.Clamp(ParseDouble(ReadValue()), 0.0, 0.92) },
                 "--screen-mode" => options with { ScreenMode = ReadValue().Trim().ToLowerInvariant() },
                 "--mirror" => options with { Mirror = true },
+                "--no-mirror" => options with { Mirror = false },
                 "--hidapi" => options with { HidApiPath = ReadValue() },
                 "--benchmark" => options with { BenchmarkFrames = int.Parse(ReadValue()) },
                 "--once" => options with { Once = true },
@@ -144,6 +209,75 @@ internal sealed record class Options
         }
 
         return options;
+    }
+
+    private static Options ApplyProfile(Options options, string profileName)
+    {
+        var profile = profileName.Trim().ToLowerInvariant();
+        return profile switch
+        {
+            "daily" or "default" => options with
+            {
+                Profile = "daily",
+                Fps = 20,
+                SamplesX = 6,
+                SamplesY = 4,
+                Threshold = 4,
+                ScreenMode = "full",
+                Mirror = true,
+                SaturationBoost = 2.8,
+                ValueBoost = 0.82,
+                NeutralThreshold = 28,
+                ColorBias = 3.2,
+                Smoothing = 0.32
+            },
+            "gaming" or "game" => options with
+            {
+                Profile = "gaming",
+                Fps = 32,
+                SamplesX = 7,
+                SamplesY = 4,
+                Threshold = 3,
+                ScreenMode = "full",
+                Mirror = true,
+                SaturationBoost = 3.2,
+                ValueBoost = 0.9,
+                NeutralThreshold = 26,
+                ColorBias = 3.8,
+                Smoothing = 0.18
+            },
+            "cinema" or "movie" => options with
+            {
+                Profile = "cinema",
+                Fps = 20,
+                SamplesX = 6,
+                SamplesY = 4,
+                Threshold = 5,
+                ScreenMode = "vibrant",
+                Mirror = true,
+                SaturationBoost = 2.4,
+                ValueBoost = 0.72,
+                NeutralThreshold = 34,
+                ColorBias = 2.9,
+                Smoothing = 0.44
+            },
+            "columns" or "vertical" or "ambilight" => options with
+            {
+                Profile = "columns",
+                Fps = 20,
+                SamplesX = 8,
+                SamplesY = 6,
+                Threshold = 6,
+                ScreenMode = "columns",
+                Mirror = false,
+                SaturationBoost = 2.4,
+                ValueBoost = 0.78,
+                NeutralThreshold = 34,
+                ColorBias = 2.6,
+                Smoothing = 0.46
+            },
+            _ => throw new ArgumentException($"Unknown profile: {profileName}. Use daily, gaming, cinema, or columns.")
+        };
     }
 }
 
@@ -160,6 +294,7 @@ internal static class AppConstants
     public const int SmCxVirtualScreen = 78;
     public const int SmCyVirtualScreen = 79;
     public const int SourceCopy = 0x00CC0020;
+    public const int CaptureBlt = 0x40000000;
     public const int Halftone = 4;
 }
 
@@ -327,7 +462,7 @@ internal static class ColorMath
 
 internal sealed class ScreenSampler : IDisposable
 {
-    private readonly IntPtr _screenDc;
+    private IntPtr _screenDc;
     private Bitmap? _bitmap;
     private Graphics? _graphics;
     private int _captureWidth;
@@ -350,10 +485,12 @@ internal sealed class ScreenSampler : IDisposable
         var height = NativeMethods.GetSystemMetrics(AppConstants.SmCyVirtualScreen);
 
         var mode = options.ScreenMode;
-        var useFullScreen = mode is "full" or "mirror" or "vibrant" or "dominant";
-        var useDominantColor = mode is "vibrant" or "dominant";
+        var useColumnDominance = mode is "columns" or "vertical" or "zones";
+        var useFullScreen = useColumnDominance || mode is "full" or "mirror" or "vibrant" or "dominant";
+        var useDominantColor = useColumnDominance || mode is "vibrant" or "dominant";
+        var useMirrorWeighting = options.Mirror && !useColumnDominance;
         var captureWidth = Math.Max(AppConstants.ZoneCount * Math.Max(1, options.SamplesX), AppConstants.ZoneCount);
-        var captureHeight = Math.Max(2, options.SamplesY * (useFullScreen ? 5 : 3));
+        var captureHeight = Math.Max(2, options.SamplesY * (useColumnDominance ? 7 : useFullScreen ? 5 : 3));
         EnsureBuffers(captureWidth, captureHeight);
 
         var sampledHeight = useFullScreen
@@ -367,22 +504,17 @@ internal sealed class ScreenSampler : IDisposable
         try
         {
             NativeMethods.SetStretchBltMode(captureDc, AppConstants.Halftone);
-            var ok = NativeMethods.StretchBlt(
-                captureDc,
-                0,
-                0,
-                captureWidth,
-                captureHeight,
-                _screenDc,
-                left,
-                startY,
-                width,
-                sampledHeight,
-                AppConstants.SourceCopy);
+            var ok = StretchCapture(captureDc, left, startY, width, sampledHeight, captureWidth, captureHeight);
 
             if (!ok)
             {
-                throw new InvalidOperationException("StretchBlt failed.");
+                RefreshDesktopDc();
+                ok = StretchCapture(captureDc, left, startY, width, sampledHeight, captureWidth, captureHeight);
+            }
+
+            if (!ok)
+            {
+                throw new InvalidOperationException($"StretchBlt failed: {Marshal.GetLastWin32Error()}");
             }
         }
         finally
@@ -437,13 +569,23 @@ internal sealed class ScreenSampler : IDisposable
                             }
 
                             var weight = 1.0 + (span / 255.0) * Math.Max(0.0, options.ColorBias);
-                            if (options.Mirror)
+                            if (useMirrorWeighting)
                             {
                                 var localX = (x - x0) / (double)Math.Max(1, x1 - x0 - 1);
                                 var edgeBias = zoneIndex <= 1 ? (1.0 - localX) : localX;
                                 var mirrorBoost = 1.0 + edgeBias * 1.4;
                                 var verticalBoost = 1.0 + ((captureHeight - 1 - y) / (double)Math.Max(1, captureHeight - 1)) * 0.45;
                                 weight *= mirrorBoost * verticalBoost;
+                            }
+                            else if (useColumnDominance)
+                            {
+                                var localX = (x - x0) / (double)Math.Max(1, x1 - x0 - 1);
+                                var localY = y / (double)Math.Max(1, captureHeight - 1);
+                                var dx = (localX - 0.5) * 1.15;
+                                var dy = (localY - 0.5) * 1.65;
+                                var distance = Math.Sqrt(dx * dx + dy * dy);
+                                var centerWeight = Math.Clamp(1.0 - distance, 0.0, 1.0);
+                                weight *= 0.70 + centerWeight * centerWeight * 0.75;
                             }
                             rTotal += red * weight;
                             gTotal += green * weight;
@@ -497,7 +639,31 @@ internal sealed class ScreenSampler : IDisposable
             _bitmap.UnlockBits(bitmapData);
         }
 
-        return options.Mirror ? ApplyMirrorBlending(zones) : zones;
+        return useMirrorWeighting ? ApplyMirrorBlending(zones) : zones;
+    }
+
+    private bool StretchCapture(
+        IntPtr captureDc,
+        int left,
+        int startY,
+        int width,
+        int sampledHeight,
+        int captureWidth,
+        int captureHeight)
+    {
+        NativeMethods.SetStretchBltMode(captureDc, AppConstants.Halftone);
+        return NativeMethods.StretchBlt(
+            captureDc,
+            0,
+            0,
+            captureWidth,
+            captureHeight,
+            _screenDc,
+            left,
+            startY,
+            width,
+            sampledHeight,
+            AppConstants.SourceCopy | AppConstants.CaptureBlt);
     }
 
     private static RgbColor[] ApplyMirrorBlending(RgbColor[] zones)
@@ -536,6 +702,20 @@ internal sealed class ScreenSampler : IDisposable
         _captureHeight = height;
     }
 
+    public void RefreshDesktopDc()
+    {
+        if (_screenDc != IntPtr.Zero)
+        {
+            NativeMethods.ReleaseDC(IntPtr.Zero, _screenDc);
+        }
+
+        _screenDc = NativeMethods.GetDC(IntPtr.Zero);
+        if (_screenDc == IntPtr.Zero)
+        {
+            throw new InvalidOperationException("Unable to refresh desktop DC.");
+        }
+    }
+
     public void Dispose()
     {
         _graphics?.Dispose();
@@ -555,7 +735,7 @@ internal sealed class HidController : IDisposable
     private readonly HidWriteDelegate _hidWrite;
     private readonly HidCloseDelegate _hidClose;
     private readonly HidErrorDelegate _hidError;
-    private readonly IntPtr _device;
+    private IntPtr _device;
 
     public HidController(string dllPath)
     {
@@ -576,6 +756,12 @@ internal sealed class HidController : IDisposable
             throw new InvalidOperationException("hid_init failed.");
         }
 
+        OpenDevice();
+    }
+
+    public void OpenDevice()
+    {
+        CloseDevice();
         _device = _hidOpenPath(AppConstants.HidPath);
         if (_device == IntPtr.Zero)
         {
@@ -583,8 +769,59 @@ internal sealed class HidController : IDisposable
         }
     }
 
+    public bool TryOpenDevice()
+    {
+        try
+        {
+            OpenDevice();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public void Reopen(TimeSpan timeout)
+    {
+        CloseDevice();
+        var deadline = DateTime.UtcNow + timeout;
+        Exception? lastError = null;
+
+        do
+        {
+            try
+            {
+                OpenDevice();
+                return;
+            }
+            catch (Exception ex)
+            {
+                lastError = ex;
+                Thread.Sleep(500);
+            }
+        }
+        while (DateTime.UtcNow < deadline);
+
+        throw new InvalidOperationException(lastError?.Message ?? "Unable to reopen ASUS HID device.");
+    }
+
+    public void CloseDevice()
+    {
+        if (_device != IntPtr.Zero)
+        {
+            _hidClose(_device);
+            _device = IntPtr.Zero;
+        }
+    }
+
     public void ApplyColors(IReadOnlyList<RgbColor> colors)
     {
+        if (_device == IntPtr.Zero)
+        {
+            OpenDevice();
+        }
+
         Span<byte> packet = stackalloc byte[17];
         for (var index = 0; index < colors.Count; index++)
         {
@@ -641,10 +878,7 @@ internal sealed class HidController : IDisposable
 
     public void Dispose()
     {
-        if (_device != IntPtr.Zero)
-        {
-            _hidClose(_device);
-        }
+        CloseDevice();
 
         if (_libraryHandle != IntPtr.Zero)
         {
@@ -679,7 +913,7 @@ internal static class NativeMethods
     [DllImport("user32.dll")]
     public static extern int ReleaseDC(IntPtr hwnd, IntPtr hdc);
 
-    [DllImport("gdi32.dll")]
+    [DllImport("gdi32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool StretchBlt(
         IntPtr hdcDest,

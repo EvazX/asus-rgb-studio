@@ -13,6 +13,7 @@ This project exists because the default ASUS / Armoury Crate experience can feel
 - Provides live previews for each effect
 - Stores a global intensity value and applies it live
 - Watches the running effect process and restarts it if it dies
+- Prevents duplicate app instances from fighting over the LEDs
 - Includes Ambilight / mirror / audio-reactive modes plus handcrafted presets
 
 ## Current highlights
@@ -36,15 +37,15 @@ This project exists because the default ASUS / Armoury Crate experience can feel
 
 ## Project structure
 
-- [`rgb-control-ui/`](D:/asus-ambient-led/rgb-control-ui)  
+- [`rgb-control-ui/`](./rgb-control-ui)  
   Windows Forms app used as the main control surface
-- [`csharp-ambient/`](D:/asus-ambient-led/csharp-ambient)  
+- [`csharp-ambient/`](./csharp-ambient)  
   C# ambient / mirror engine
-- [`csharp-audio/`](D:/asus-ambient-led/csharp-audio)  
+- [`csharp-audio/`](./csharp-audio)  
   C# audio-reactive engine
 - `*.py` effect scripts  
   Custom effect library and hardware experiments
-- [`test_patterns.html`](D:/asus-ambient-led/test_patterns.html)  
+- [`test_patterns.html`](./test_patterns.html)  
   Local pattern page for visual tuning and testing
 
 ## Running the app
@@ -52,16 +53,36 @@ This project exists because the default ASUS / Armoury Crate experience can feel
 Requirements:
 
 - Windows
-- .NET 8 Desktop Runtime
 - An ASUS Aura-compatible laptop setup
 - `hidapi.dll` available through the local OpenRGB install path currently used by the project
 
-Run:
+Packaged release:
 
 ```powershell
-cd D:\asus-ambient-led\rgb-control-ui
-dotnet .\bin\Release\net8.0-windows\AsusKeyboardFx.dll
+.\START_ASUS_KEYBOARD_FX.cmd
 ```
+
+Local development run:
+
+```powershell
+cd D:\_Projets_Codex\02_Archives_Techniques\asus-ambient-led\rgb-control-ui
+dotnet run -c Release
+```
+
+Daily Ambilight / mirror profile:
+
+```powershell
+cd D:\asus-ambient-led
+.\START_DAILY_AMBILIGHT.cmd
+```
+
+The daily profile is also the default for the native engine:
+
+```powershell
+dotnet .\csharp-ambient\bin\Release\net8.0-windows\AmbientBar.dll
+```
+
+It runs full-screen mirror sampling at a conservative update rate, with smoothing and automatic HID reconnect after Windows sleep/resume. Optional profiles are available with `--profile gaming` and `--profile cinema`.
 
 ## One-command install
 
@@ -78,9 +99,18 @@ The shortcut launches `AsusKeyboardFx.exe` directly, so no terminal window stays
 Build:
 
 ```powershell
-cd D:\asus-ambient-led\rgb-control-ui
-dotnet build RgbControlUI.csproj -c Release
+cd D:\_Projets_Codex\02_Archives_Techniques\asus-ambient-led
+powershell -ExecutionPolicy Bypass -File .\build_release.ps1
 ```
+
+Clean local build clutter:
+
+```powershell
+cd D:\asus-ambient-led
+powershell -ExecutionPolicy Bypass -File .\clean_project.ps1
+```
+
+By default this only shows what would be removed. Add `-Apply` to delete rebuildable artifacts such as `bin/`, `obj/`, `__pycache__/`, and local runtime state files. Add `-IncludeReleases` only if you also want to remove `dist/` and `release/`.
 
 ## Status
 

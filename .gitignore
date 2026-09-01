@@ -11,15 +11,21 @@ obj/
 # Local runtime state
 rgb_effect_pids.txt
 rgb_intensity.txt
+*.log
+*.tmp
 
 # Publish / build artifacts
 dist/
 release/
 *.exe
 *.dll
+*.zip
+*.msix
+*.nupkg
 
 # OS / editor
 .vs/
 .vscode/
+.idea/
 Thumbs.db
 Desktop.ini

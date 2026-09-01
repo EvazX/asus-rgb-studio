@@ -66,6 +66,28 @@
       width: 100%;
       height: 100%;
     }
+    .center-zones-wrap {
+      display: grid;
+      place-items: center;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(circle at center, rgba(255,255,255,0.10), transparent 36%),
+        #05070b;
+    }
+    .center-zones {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      width: min(86vw, 1280px);
+      height: min(56vh, 560px);
+      overflow: hidden;
+      border-radius: 32px;
+      border: 2px solid rgba(255,255,255,0.18);
+      box-shadow: 0 28px 90px rgba(0,0,0,0.50);
+    }
+    .center-zones > div {
+      height: 100%;
+    }
     .bars {
       display: grid;
       grid-template-rows: repeat(5, 1fr);
@@ -103,6 +125,7 @@
     <button data-mode="cyberpunk">Cyberpunk</button>
     <button data-mode="sunset">Sunset</button>
     <button data-mode="rainbow4">4 zones arc-en-ciel</button>
+    <button data-mode="center4">4 zones centrées</button>
     <button data-mode="rgbbars">Bandes RGB</button>
     <button data-mode="warmbars">Bandes chaudes</button>
     <button data-mode="duo">Gauche / droite</button>
@@ -111,7 +134,7 @@
     <button data-mode="sweep">Balayage</button>
     <button data-mode="gradientmove">Gradient mouvant</button>
     <div class="hint">
-      Raccourcis : <strong>1</strong> rouge, <strong>2</strong> vert, <strong>3</strong> bleu, <strong>4</strong> blanc, <strong>5</strong> cyberpunk, <strong>6</strong> sunset, <strong>7</strong> rainbow, <strong>8</strong> RGB bars, <strong>9</strong> warm bars, <strong>0</strong> gauche/droite, <strong>Q</strong> damier, <strong>W</strong> split pulse, <strong>E</strong> balayage, <strong>R</strong> gradient mouvant. Appuie sur <strong>F11</strong> pour plein écran.
+      Raccourcis : <strong>1</strong> rouge, <strong>2</strong> vert, <strong>3</strong> bleu, <strong>4</strong> blanc, <strong>5</strong> cyberpunk, <strong>6</strong> sunset, <strong>7</strong> rainbow, <strong>8</strong> zones centrées, <strong>9</strong> RGB bars, <strong>0</strong> gauche/droite, <strong>Q</strong> damier, <strong>W</strong> split pulse, <strong>E</strong> balayage, <strong>R</strong> gradient mouvant. Appuie sur <strong>F11</strong> pour plein écran.
     </div>
   </div>
   <div id="stage"></div>
@@ -129,6 +152,7 @@
       cyberpunk: { name: "Cyberpunk", render: () => four(["#00ffd9", "#ff00aa", "#8f3cff", "#00c2ff"]) },
       sunset: { name: "Sunset", render: () => four(["#ff6a00", "#ff9740", "#ff4f88", "#ad2cd6"]) },
       rainbow4: { name: "4 zones arc-en-ciel", render: () => four(["#ff0000", "#ff8a00", "#00ff66", "#009dff"]) },
+      center4: { name: "4 zones centrées", render: () => centerFour(["#ff003c", "#ffb000", "#00e676", "#008cff"]) },
       rgbbars: { name: "Bandes RGB", render: () => bars(["#ff0000", "#00ff00", "#0000ff", "#ffffff", "#000000"]) },
       warmbars: { name: "Bandes chaudes", render: () => bars(["#4a1208", "#8e2a12", "#d35c17", "#ffb14a", "#fff1cc"]) },
       duo: { name: "Gauche / droite", render: () => four(["#ff0000", "#ff8a00", "#00ff66", "#009dff"]) },
@@ -153,6 +177,15 @@
 
     function four(colors) {
       stage.innerHTML = `<div class="four-zones">${colors.map(color => `<div style="background:${color}"></div>`).join("")}</div>`;
+    }
+
+    function centerFour(colors) {
+      stage.innerHTML = `
+        <div class="center-zones-wrap">
+          <div class="center-zones">
+            ${colors.map(color => `<div style="background:${color}"></div>`).join("")}
+          </div>
+        </div>`;
     }
 
     function bars(colors) {
@@ -252,8 +285,8 @@
         "5": "cyberpunk",
         "6": "sunset",
         "7": "rainbow4",
-        "8": "rgbbars",
-        "9": "warmbars",
+        "8": "center4",
+        "9": "rgbbars",
         "0": "duo",
         "q": "checker",
         "w": "splitpulse",
